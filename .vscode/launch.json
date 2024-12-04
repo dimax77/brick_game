@@ -1,0 +1,21 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "kotlin",
+            "request": "launch",
+            "name": "Kotlin Launch",
+            "projectRoot": "${workspaceFolder}/race",
+            "mainClass": "kt/sample/race/AppKt",
+            "preLaunchTask": "build"
+        },
+        {
+            "type": "kotlin",
+            "request": "launch",
+            "name": "Run Server",
+            "projectRoot": "${workspaceFolder}/server",
+            "mainClass": "src/main/kotlin/org/example/ServerKt",
+            "preLaunchTask": "build"
+        }
+    ]
+}
