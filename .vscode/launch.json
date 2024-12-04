@@ -6,7 +6,7 @@
             "request": "launch",
             "name": "Kotlin Launch",
             "projectRoot": "${workspaceFolder}/race",
-            "mainClass": "kt/sample/race/AppKt",
+            "mainClass": "race/AppKt",
             "preLaunchTask": "build"
         },
         {

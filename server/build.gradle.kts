@@ -26,6 +26,7 @@ dependencies {
     implementation("io.ktor:ktor-serialization-kotlinx-json:2.3.2")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1")
     implementation("ch.qos.logback:logback-classic:1.5.6")
+    implementation("io.ktor:ktor-server-content-negotiation:2.3.2")
 
     // Use JUnit Jupiter for testing.
     testImplementation(libs.junit.jupiter)

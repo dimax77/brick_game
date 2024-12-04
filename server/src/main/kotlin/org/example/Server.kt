@@ -13,6 +13,8 @@ import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.routing
 import kotlinx.serialization.Serializable
+import io.ktor.server.http.content.*
+import java.io.File
 
 fun main() {
     embeddedServer(Netty, port = 8080, module = Application::module).start(wait = true)
@@ -21,8 +23,13 @@ fun main() {
 fun Application.module() {
     routing {
         // Test
-        get("/") {
-            call.respondText("Server is running!")
+        // get("/") {
+        //     call.respondText("Server is running!")
+        // }
+
+        static("/") {
+            staticRootFolder = File("web_gui")
+            files(".") // Раздаёт файлы из web_gui
         }
 
         // Получение списка доступных игр
