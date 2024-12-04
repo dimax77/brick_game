@@ -22,15 +22,8 @@ fun main() {
 
 fun Application.module() {
     routing {
-        // Test
-        // get("/") {
-        //     call.respondText("Server is running!")
-        // }
 
-        static("/") {
-            staticRootFolder = File("web_gui")
-            files(".") // Раздаёт файлы из web_gui
-        }
+        staticFiles("/", File("web_gui"))
 
         // Получение списка доступных игр
         get("/api/games") {
