@@ -1,3 +1,4 @@
+<!-- index.html -->
 <!DOCTYPE html>
 <html lang="en">
 
@@ -6,18 +7,22 @@
     <link rel="stylesheet" href="styles.css">
     <script src="./game.js" type="module" defer></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>tetris</title>
+    <title>Race</title>
 </head>
 
 <body>
-    <h1>tetris</h1>
-    <div id="tetris">
+    <h1>Race</h1>
+    <div id="race">
         <div id="game-board"></div>
-        <div id="side-panel dashboard-text">
+        <div id="side-panel" class="dashboard-text">
             <div id="score">
-                <p>score:</p>
-                <p>100</p>
-                <p>time:</p>
+                <p>Score:</p>
+                <p id="score-value">100</p>
+            </div>
+            <div id="controls">
+                <button id="start">Start</button>
+                <button id="pause">Pause</button>
+                <button id="stop">Stop</button>
             </div>
         </div>
     </div>

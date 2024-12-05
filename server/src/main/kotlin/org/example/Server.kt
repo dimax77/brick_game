@@ -11,9 +11,11 @@ import io.ktor.server.response.respond
 import io.ktor.server.response.respondText
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
+import io.ktor.server.request.receiveText
 import io.ktor.server.routing.routing
 import kotlinx.serialization.Serializable
 import io.ktor.server.http.content.*
+import kotlinx.serialization.json.Json
 import java.io.File
 
 fun main() {
@@ -23,7 +25,14 @@ fun main() {
 fun Application.module() {
     routing {
 
-        staticFiles("/", File("web_gui"))
+        println("Static folder exists: " + File("C:\\Users\\ebox\\school\\brick_game\\web_gui").exists())
+
+        //mac
+        // staticFiles("/", File("web_gui"))
+
+        //win
+        staticFiles("/", File("C:\\Users\\ebox\\school\\brick_game\\web_gui"))
+
 
         // Получение списка доступных игр
         get("/api/games") {
@@ -50,11 +59,18 @@ fun Application.module() {
 
         // Выполнить команду игрока
         post("/api/actions") {
+            println("Trying proces action request..")
+            println("Request body (raw): ${call.toString()}")
+            val rawBody = call.receiveText()
+            println("Raw Body: $rawBody")
+            
             val action = try {
-                call.receive<UserAction>()
+                Json.decodeFromString<UserAction>(rawBody)
+                // call.receive<UserAction>()
             } catch (e: Exception) {
                 null
             }
+            
             if (action == null) {
                 call.respond(HttpStatusCode.BadRequest, ErrorMessage("Invalid action format"))
             } else {

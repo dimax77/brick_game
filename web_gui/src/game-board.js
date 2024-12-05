@@ -1,3 +1,5 @@
+// game-boards.js
+
 import { GAME_BOARD_WIDTH, GAME_BOARD_HEIGHT } from './config.js';
 
 export class GameBoard {
@@ -27,3 +29,5 @@ export class GameBoard {
         this.getTile(x, y).classList.remove('active');
     }
 }
+
+

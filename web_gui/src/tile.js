@@ -1,3 +1,5 @@
+// tyle.js
+
 export class Tile {
     constructor(x, y) {
         const $tile = document.createElement('div');
