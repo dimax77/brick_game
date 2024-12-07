@@ -18,7 +18,7 @@ export class GameBoard {
     }
 
     getTile(x, y) {
-        return this.tiles[y * GAME_BOARD_WIDTH + x];
+        return this.tiles[x * GAME_BOARD_WIDTH + y];
     }
 
     enableTile(x, y) {

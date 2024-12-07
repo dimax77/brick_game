@@ -8,7 +8,7 @@
 plugins {
     // Apply the org.jetbrains.kotlin.jvm Plugin to add support for Kotlin.
     alias(libs.plugins.jvm)
-
+    kotlin("plugin.serialization") version "2.0.20"
     // Apply the application plugin to add support for building a CLI application in Java.
     application
 }
@@ -24,9 +24,11 @@ dependencies {
     implementation("io.ktor:ktor-server-netty:2.3.2")
     // implementation("io.ktor:ktor-server-routing:2.3.2")
     implementation("io.ktor:ktor-serialization-kotlinx-json:2.3.2")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.6.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.2")
     implementation("ch.qos.logback:logback-classic:1.5.6")
     implementation("io.ktor:ktor-server-content-negotiation:2.3.2")
+    implementation(project(":race"))
 
     // Use JUnit Jupiter for testing.
     testImplementation(libs.junit.jupiter)
