@@ -49,7 +49,7 @@ fun Application.module() {
             val gamesList = GamesList(
                 games = listOf(
                     GameInfo(1, "Race"),
-                    GameInfo(2, "Tetris")
+//                    GameInfo(2, "Tetris")
                 )
             )
             println("Received gameId: $gamesList")
@@ -66,7 +66,7 @@ fun Application.module() {
                     ErrorMessage("Invalid gameId")
                 )
 
-                gameId !in 1..2 -> call.respond(
+                gameId !in 1..1 -> call.respond(
                     HttpStatusCode.NotFound,
                     ErrorMessage("Game not found")
                 )
@@ -77,6 +77,7 @@ fun Application.module() {
 
         // Выполнить команду игрока
         post("/api/actions") {
+
             println("Trying proces action request..")
             println("Request body (raw): $call")
             val rawBody = call.receiveText()
@@ -94,7 +95,7 @@ fun Application.module() {
             if (action == null) {
                 call.respond(HttpStatusCode.BadRequest, ErrorMessage("Invalid action format"))
             } else {
-                race.updateCurrentState(action.actionId, action.hold)
+                race.userAction(action.actionId, action.hold)
                 call.respond(HttpStatusCode.OK, "Action ${action.actionId} executed")
             }
         }

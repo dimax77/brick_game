@@ -1,6 +1,6 @@
 package org.example
 
-class GameEngine {
+class GameEngine(var state: RaceFCM = RaceFCM.Start) {
     private var playerLane = 1 // Полоса игрока (0, 1, 2)
     private val enemies = mutableListOf<EnemyCar>()
     private var gameField: Array<Array<Boolean>> = Array(20) { Array(10) { false } }
@@ -9,6 +9,8 @@ class GameEngine {
     var level: Int = 0
     var speed: Int = 0
     var pause: Boolean = false
+    val gameState: State = State()
+
     var isGameOver = false
         private set
 
@@ -48,56 +50,53 @@ class GameEngine {
         }
     }
 
-    fun getGameState(): GameState {
+    fun getGameState(): State {
         applyPlayerCarOnGameField()
-        return GameState(
+        return State(
             field = gameFieldToList(gameField),
             next = gameFieldToList(gameField),
             score = score, highScore = highScore, level = level, speed = speed, pause = pause
         )
     }
 
-    fun updateCurrentState(action: Action, hold: Boolean) {
+    fun updateCurrentState(): State {
+        return getGameState()
+    }
 
+    fun createRivalCar(): List<IntArray> {
+        val currentInstant: java.time.Instant = java.time.Instant.now()
+        val currentTimeStamp: Long = currentInstant.toEpochMilli()
+        val line = (currentTimeStamp / 3).toInt()
+        println("Line: $line")
+        val line2 = (currentTimeStamp / 3).toInt()
+        println("Line: $line2")
+        val line3 = (currentTimeStamp / 3).toInt()
+        println("Line: $line3")
+        val rivalCar = listOf(
+            intArrayOf(0, 1), intArrayOf(1, 0), intArrayOf(1, 1), intArrayOf(1, 2),
+            intArrayOf(2, 1), intArrayOf(3, 0), intArrayOf(3, 1), intArrayOf(3, 2)
+        )
+        return rivalCar
+    }
+
+    fun userAction(action: Action, hold: Boolean) {
+        if (action == Action.Start && state == RaceFCM.Start) {
+            gameState.level = 1
+            gameState.speed = 1
+//            state = RaceFCM.Spawn()
+            val currentInstant: java.time.Instant = java.time.Instant.now()
+            val currentTimeStamp: Long = currentInstant.toEpochMilli()
+            val line = (currentTimeStamp / 3).toInt()
+            println("Line: $line")
+            val line2 = (currentTimeStamp / 3).toInt()
+            println("Line: $line2")
+            val line3 = (currentTimeStamp / 3).toInt()
+            println("Line: $line3")
+        }
     }
 }
 
 data class EnemyCar(val lane: Int, var positionY: Int)
-
-data class GameState(
-    val field: List<List<Boolean>>,
-    val next: List<List<Boolean>>,
-    val score: Int,
-    val highScore: Int,
-    val level: Int,
-    val speed: Int,
-    val pause: Boolean
-)
-
-data class PlayerCar(
-    val car: List<List<Boolean>> = listOf(
-        listOf(false, false, false, false, false, false, false, false, false, false),
-        listOf(false, false, false, false, false, false, false, false, false, false),
-        listOf(false, false, false, false, false, false, false, false, false, false),
-        listOf(false, false, false, false, false, false, false, false, false, false),
-        listOf(false, false, false, false, false, false, false, false, false, false),
-        listOf(false, false, false, false, false, false, false, false, false, false),
-        listOf(false, false, false, false, false, false, false, false, false, false),
-        listOf(false, false, false, false, false, false, false, false, false, false),
-        listOf(false, false, false, false, false, false, false, false, false, false),
-        listOf(false, false, false, false, false, false, false, false, false, false),
-        listOf(false, false, false, false, false, false, false, false, false, false),
-        listOf(false, false, false, false, false, false, false, false, false, false),
-        listOf(false, false, false, false, false, false, false, false, false, false),
-        listOf(false, false, false, false, false, false, false, false, false, false),
-        listOf(false, false, false, false, false, false, false, false, false, false),
-        listOf(false, false, false, false, false, false, false, false, false, false),
-        listOf(false, false, false, false, false, true, false, false, false, false),
-        listOf(false, false, false, false, true, true, true, false, false, false),
-        listOf(false, false, false, false, false, true, false, false, false, false),
-        listOf(false, false, false, false, true, true, true, false, false, false),
-    )
-)
 
 
 data class UserAction(
