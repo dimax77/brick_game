@@ -77,38 +77,34 @@ fun Application.module() {
 
         // Выполнить команду игрока
         post("/api/actions") {
-
-            println("Trying proces action request..")
-            println("Request body (raw): $call")
+            println("Trying process action request..")
             val rawBody = call.receiveText()
             println("Raw Body: $rawBody")
-            val act = Json.decodeFromString<UserAction>(rawBody)
-            println(act.hold)
-            println(act.actionId)
-            val action = try {
-                Json.decodeFromString<UserAction>(rawBody)
-                // call.receive<UserAction>()
-            } catch (e: Exception) {
-                null
+            val code = rawBody.substring(rawBody.indexOf(":")+1, rawBody.indexOf(",")).toInt()
+            val action = when (code) {
+                1 -> Action.Start
+                2 -> Action.Pause
+                3 -> Action.Terminate
+                4 -> Action.Left
+                5 -> Action.Right
+                6 -> Action.Up
+                7 -> Action.Down
+                8 -> Action.Action
+                else -> {Action.Pause}
             }
-
-            if (action == null) {
-                call.respond(HttpStatusCode.BadRequest, ErrorMessage("Invalid action format"))
-            } else {
-                race.userAction(action.actionId, action.hold)
-                call.respond(HttpStatusCode.OK, "Action ${action.actionId} executed")
-            }
+                race.userAction(action, false)
+                call.respond(HttpStatusCode.OK, "Action executed")
         }
 
         // Получение текущего состояния игры
         get("/api/state") {
             println("State request accepted")
-            println("Request body (raw): $call")
-            val rawBody = call.request.headers
-            println("Raw Body: $rawBody")
-            val g = race.getGameState()
+//            println("Request body (raw): $call")
+//            val rawBody = call.request.headers
+//            println("Raw Body: $rawBody")
+            val g = race.updateCurrentState()
             val gameState = Json.encodeToString(g)
-            println(gameState)
+//            println(gameState)
             call.respond(HttpStatusCode.OK, gameState)
         }
     }
@@ -132,7 +128,7 @@ data class UserAction(
 )
 
 @Serializable
-data class GameState(
+data class State(
     val field: List<List<Boolean>>,
     val next: List<List<Boolean>>,
     val score: Int,

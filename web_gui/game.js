@@ -13,33 +13,25 @@ const $sidePanel = document.querySelector('#side-panel');
 document.addEventListener('keydown', function (event) {
     if (keyCodes.up.includes(event.code)) {
         // gameBoard.enableTile(4, 5);
-        sendAction(4, event.ctrlKey);
+        sendAction(6, event.ctrlKey);
 
         console.log('up');
     }
     if (keyCodes.right.includes(event.code)) {
         // gameBoard.disableTile(4, 5);
-        sendAction(7, true);
+        sendAction(5, true);
 
         console.log('right');
     }
     if (keyCodes.down.includes(event.code)) {
-        sendAction(5, true);
+        sendAction(7, true);
 
         console.log('down');
     }
     if (keyCodes.left.includes(event.code)) {
-        sendAction(6, true);
+        sendAction(4, true);
 
         console.log('left');
-    }
-});
-
-
-document.addEventListener('keydown', (event) => {
-    if (event.code === 'Escape') {
-        sendAction(2, false)
-        console.log('Game paused');
     }
 });
 
@@ -47,14 +39,29 @@ let gameRunning = false;
 let gamePaused = false;
 let gameInterval;
 
+document.addEventListener('keydown', (event) => {
+    if (event.code === 'Escape') {
+        if (!gamePaused) {
+            // sendAction(2, false)
+            clearInterval(gameInterval);
+            gamePaused = true
+            console.log('Game paused');
+        } else {
+            gamePaused = false
+            startGame()
+        }
+    }
+});
+
 function startGame() {
-    setInterval(fetchGameState, 100);
-    // gameInterval = setInterval(() => {
-    //     if (!gamePaused) {
-    //         console.log('Game is running...');
-    //         // Основная игровая логика здесь
-    //     }
-    // }, 100); // Интервал 100 мс
+    // setInterval(fetchGameState, 100);
+    gameInterval = setInterval(() => {
+        if (!gamePaused) {
+            console.log('Game is running...');
+            fetchGameState()
+            // Основная игровая логика здесь
+        }
+    }, 500); // Интервал 100 мс
 }
 
 function stopGame() {
@@ -68,8 +75,8 @@ document.querySelector('#start').addEventListener('click', () => {
         gameRunning = true;
         gamePaused = false;
         sendAction(1, true);
-        // startGame();
-        fetchGameState.call()
+        startGame();
+        // fetchGameState.call()
     }
 });
 
@@ -121,10 +128,10 @@ const actions = {
     start: 1,
     pause: 2,
     terminate: 3,
-    up: 4,
-    down: 5,
-    left: 6,
-    right: 7,
+    left: 4,
+    right: 5,
+    up: 6,
+    down: 7,
     action: 8
 };
 
