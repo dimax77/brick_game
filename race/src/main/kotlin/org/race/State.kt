@@ -1,4 +1,6 @@
-package org.example
+package org.race
+
+
 
 data class State(
     val field: List<List<Boolean>>,

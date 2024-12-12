@@ -13,11 +13,28 @@
 <body>
     <h1>Race</h1>
     <div id="race">
-        <div id="game-board"></div>
+        <!-- <div id="game-board"></div> -->
+        <div id="game-board-container">
+            <div id="game-board"></div>
+            <div id="game-message" class="hidden">READY</div>
+        </div>
+
         <div id="side-panel" class="dashboard-text">
             <div id="score">
                 <p>Score:</p>
-                <p id="score-value">100</p>
+                <p id="score-value">0</p>
+            </div>
+            <div id="high">
+                <p>High Score:</p>
+                <p id="high-value">0</p>
+            </div>
+            <div id="speed">
+                <p>Speed:</p>
+                <p id="speed-value">1</p>
+            </div>
+            <div id="level">
+                <p>Level:</p>
+                <p id="level-value">1</p>
             </div>
             <div id="controls">
                 <button id="start">Start</button>

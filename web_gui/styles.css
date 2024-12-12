@@ -37,11 +37,138 @@ body {
 }
 
 .dashboard-text {
-    font-size: 2rem;
+    font-size: 1rem;
 }
 
 #controls button {
     padding: 10px;
     margin: 5px;
     font-size: 1rem;
+}
+
+/* Revamped styles for side panel */
+
+#side-panel {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    background-color: #f4f4f4;
+    border: 2px solid #ccc;
+    border-radius: 8px;
+    width: 250px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+#side-panel>div {
+    width: 100%;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+#side-panel>div:last-child {
+    margin-bottom: 0;
+}
+
+/* Section headers */
+#side-panel div p:first-child {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 8px;
+}
+
+/* Values */
+#side-panel div p:last-child {
+    font-size: 1.0rem;
+    font-weight: bold;
+    color: #007bff;
+    margin: 0;
+}
+
+#controls {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+#controls button {
+    padding: 10px 15px;
+    font-size: 1rem;
+    font-weight: bold;
+    color: #fff;
+    background-color: #007bff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#controls button:hover {
+    background-color: #0056b3;
+}
+
+/* Add responsiveness */
+@media (max-width: 768px) {
+    #side-panel {
+        width: 100%;
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+
+    #side-panel>div {
+        margin-bottom: 10px;
+        flex: 1 1 45%;
+    }
+
+    #controls {
+        flex: 1 1 100%;
+    }
+}
+
+/* Контейнер для игрового поля с сообщением */
+#game-board-container {
+    position: relative;
+    display: inline-block;
+}
+
+/* Сообщения: READY, PAUSED, GAME OVER */
+#game-message {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 20px 40px;
+    font-size: 2rem;
+    font-weight: bold;
+    text-align: center;
+    border-radius: 10px;
+    z-index: 10;
+}
+
+/* Цвета для разных состояний */
+#game-message.ready {
+    background: rgba(0, 255, 0, 0.8);
+    /* Зеленый для READY */
+    color: white;
+}
+
+#game-message.paused {
+    background: rgba(255, 165, 0, 0.8);
+    /* Оранжевый для PAUSED */
+    color: white;
+}
+
+#game-message.game-over {
+    background: rgba(255, 0, 0, 0.8);
+    /* Красный для GAME OVER */
+    color: white;
+}
+
+/* Скрыть сообщение */
+.hidden {
+    display: none;
 }

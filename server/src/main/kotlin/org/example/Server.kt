@@ -1,29 +1,72 @@
 // BrickGameServerClass.kt
 package org.example
 
+import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
+import io.ktor.http.defaultForFile
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.application.Application
 import io.ktor.server.application.call
 import io.ktor.server.application.install
 import io.ktor.server.engine.embeddedServer
-import io.ktor.server.http.content.staticFiles
+import io.ktor.server.http.content.LocalFileContent
+import io.ktor.server.http.content.default
+import io.ktor.server.http.content.files
+import io.ktor.server.http.content.resources
+import io.ktor.server.http.content.static
+import io.ktor.server.http.content.staticRootFolder
+//import io.ktor.server.http.content.staticFiles
 import io.ktor.server.netty.Netty
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.request.receiveText
 import io.ktor.server.response.respond
+import io.ktor.server.routing.IgnoreTrailingSlash
+import io.ktor.server.routing.Route
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.routing
+import io.ktor.util.combineSafe
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import org.race.Action
+import org.race.GameEngine
+import org.race.State
 import java.io.File
 
 fun main() {
-    embeddedServer(Netty, port = 8080, module = Application::module).start(wait = true)
+    embeddedServer(Netty, host = "localhost", port = 8080, module = Application::module).start(wait = true)
 }
 
+fun Route.filesWithDefaultIndex(dir: File) {
+    val combinedDir = staticRootFolder?.resolve(dir) ?: dir
+    println("Combine dir: $combinedDir")
+    get("/") {
+//        val relativePath = call.parameters
+//            .getAll("/")
+//            ?.joinToString(File.separator) ?: return@get
+//        val file = combinedDir.combineSafe(relativePath)
+//        val fallbackFile = file.combineSafe("index.html")
+//
+//        val localFile = when {
+//            file.isFile -> file
+//            file.isDirectory && fallbackFile.isFile -> fallbackFile
+//            else -> return@get
+//        }
+        val file = combinedDir.resolve("index.html")
+        if (file.exists() && file.isFile) {
+            call.respond(LocalFileContent(file, ContentType.defaultForFile(file)))
+        } else {
+            call.respond(HttpStatusCode.NotFound, "Index file not found")
+        }
+
+
+//        call.respond(LocalFileContent(localFile, ContentType.defaultForFile(localFile)))
+    }
+    static {
+        files(dir)
+    }
+}
 fun Application.module() {
     val race = GameEngine()
 
@@ -33,12 +76,28 @@ fun Application.module() {
             isLenient = true
         })
     }
+
+
+    install(IgnoreTrailingSlash)
     routing {
 
 //        println("Static folder exists: " + File("C:\\Users\\ebox\\school\\brick_game\\web_gui").exists())
 
         //mac
-        staticFiles("/", File("web_gui"))
+//        staticFiles("/", File("web_gui"))
+
+        val staticData = File("web_gui")
+        filesWithDefaultIndex(staticData)
+
+
+
+//        static("/") {
+//            files("web_gui")
+//            default("index.html")
+//        }
+        val folder = File("web_gui/index.html")
+        println("Does folder exist? ${folder.exists()}")
+        println("Folder absolute path: ${folder.absolutePath}")
 
         //win
 //        staticFiles("/", File("C:\\Users\\ebox\\school\\brick_game\\web_gui"))
@@ -90,9 +149,10 @@ fun Application.module() {
                 6 -> Action.Up
                 7 -> Action.Down
                 8 -> Action.Action
-                else -> {Action.Pause}
+                else -> {
+                    Action.Pause}
             }
-                race.userAction(action, false)
+                race.userInput(action, false)
                 call.respond(HttpStatusCode.OK, "Action executed")
         }
 
@@ -102,7 +162,7 @@ fun Application.module() {
 //            println("Request body (raw): $call")
 //            val rawBody = call.request.headers
 //            println("Raw Body: $rawBody")
-            val g = race.updateCurrentState()
+            val g = race.updateCurrentState().toSerializableState()
             val gameState = Json.encodeToString(g)
 //            println(gameState)
             call.respond(HttpStatusCode.OK, gameState)
@@ -127,8 +187,20 @@ data class UserAction(
     val hold: Boolean
 )
 
+fun State.toSerializableState(): SerializableState {
+    return SerializableState(
+        field = this.field,
+        next = this.next,
+        score = this.score,
+        highScore = this.highScore,
+        level = this.level,
+        speed = this.speed,
+        pause = this.pause
+    )
+}
+
 @Serializable
-data class State(
+data class SerializableState(
     val field: List<List<Boolean>>,
     val next: List<List<Boolean>>,
     val score: Int,
@@ -137,6 +209,7 @@ data class State(
     val speed: Int,
     val pause: Boolean
 )
+
 @Serializable
 data class ErrorMessage(
     val message: String

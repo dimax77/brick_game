@@ -1,4 +1,4 @@
-package org.example
+package org.race
 
 sealed class RaceFSM (val title: String){
     data object Start : RaceFSM("Start")
@@ -8,4 +8,5 @@ sealed class RaceFSM (val title: String){
     data object Collided : RaceFSM("Collided")
     data object Reached : RaceFSM("Reached")
     data object GameOver : RaceFSM("Game Over")
+    data object Paused : RaceFSM("Paused")
 }

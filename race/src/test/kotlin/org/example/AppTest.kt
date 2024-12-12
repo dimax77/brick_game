@@ -5,6 +5,7 @@ package org.example
 
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.assertNotNull
+import org.race.App
 
 class AppTest {
     @Test

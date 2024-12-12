@@ -1,4 +1,4 @@
-package org.example
+package org.race
 
 private var rivalCars: MutableList<List<IntArray>> = mutableListOf()
 

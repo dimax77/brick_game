@@ -7,8 +7,12 @@ import { GAME_BOARD_WIDTH, GAME_BOARD_HEIGHT } from './src/config.js';
 
 applyRootStyles(rootStyles);
 const gameBoard = new GameBoard(document.querySelector('#game-board'));
-
 const $sidePanel = document.querySelector('#side-panel');
+const $gameMessage = document.querySelector('#game-message');
+
+let gameRunning = false;
+let gamePaused = false;
+let gameInterval;
 
 document.addEventListener('keydown', function (event) {
     if (keyCodes.up.includes(event.code)) {
@@ -35,10 +39,6 @@ document.addEventListener('keydown', function (event) {
     }
 });
 
-let gameRunning = false;
-let gamePaused = false;
-let gameInterval;
-
 document.addEventListener('keydown', (event) => {
     if (event.code === 'Escape') {
         if (!gamePaused) {
@@ -61,32 +61,38 @@ function startGame() {
             fetchGameState()
             // Основная игровая логика здесь
         }
-    }, 500); // Интервал 100 мс
+    }, 16); // Интервал 100 мс
 }
 
+// Логика для окончания игры
 function stopGame() {
     clearInterval(gameInterval);
+    gameRunning = false;
+    showMessage('game-over'); // Показать GAME OVER
     console.log('Game has stopped.');
-    // Сброс состояния игрового поля
 }
 
+// Логика для старта игры
 document.querySelector('#start').addEventListener('click', () => {
     if (!gameRunning) {
+        hideMessage(); // Убираем сообщение
         gameRunning = true;
         gamePaused = false;
         sendAction(1, true);
         startGame();
-        // fetchGameState.call()
     }
 });
 
+// Логика для паузы
 document.querySelector('#pause').addEventListener('click', () => {
     if (gameRunning) {
         gamePaused = !gamePaused;
-        console.log(gamePaused ? 'Game paused.' : 'Game resumed.');
+        if (gamePaused) {
+            showMessage('paused');
+        } else {
+            hideMessage(); // Убираем сообщение
+        }
         sendAction(2, true);
-
-
     }
 });
 
@@ -97,6 +103,7 @@ document.querySelector('#stop').addEventListener('click', () => {
         stopGame();
     }
 });
+
 
 const sendAction = async (actionId, hold) => {
     try {
@@ -151,40 +158,63 @@ const fetchGameState = async () => {
 };
 
 const updateGameBoard = (gameState) => {
-    console.log("Trying update playing feild");
-    // Сбрасываем игровое поле
-    // gameBoard.tiles.forEach(tile => tile.classList.remove('active', 'obstacle', 'car'));
-    gameBoard.tiles.forEach(tile => tile.classList.remove('active'));
-    console.log(gameState)
-    console.log(gameState.field[18][5])
+    if (gameState.speed == 0) {
+        stopGame()
+    } else {
+        console.log("Trying update playing feild");
+
+        gameBoard.tiles.forEach(tile => tile.classList.remove('active'));
+        console.log(gameState)
+        console.log(gameState.field[18][5])
 
 
-    for (let i = 0; i < GAME_BOARD_HEIGHT; ++i) {
-        for (let j = 0; j < GAME_BOARD_WIDTH; ++j) {
-            // const $tile = document.createElement('div');
-            // $tile.classList.add('tile');
-            // $tile.id = `position-${i}-${j}`;
-            // this.tiles.push($tile);
-            // this.element.append($tile);
-            // console.log("Cell value: ", gameState.field[i][j])
-            if (gameState.field[i][j]) {
-                gameBoard.enableTile(i, j);
-            } else {
-                console.log("Tile is empty");
+        const score = document.getElementById("score-value")
+        score.innerHTML = gameState.score
+        const level = document.getElementById("level-value")
+        level.innerHTML = gameState.level
+        const speed = document.getElementById("speed-value")
+        speed.innerHTML = gameState.speed
+        const high = document.getElementById("high-value")
+        high.innerHTML = gameState.highScore
+
+        for (let i = 0; i < GAME_BOARD_HEIGHT; ++i) {
+            for (let j = 0; j < GAME_BOARD_WIDTH; ++j) {
+
+                if (gameState.field[i][j]) {
+                    gameBoard.enableTile(i, j);
+                } else {
+                    console.log("Tile is empty");
+                }
             }
         }
     }
-
-    // Устанавливаем активные элементы
-    // gameState.field.forEach(car => {
-    //     const tile = gameBoard.getTile(car.x, car.y);
-    //     tile.classList.add('car');
-    // });
-
-    // gameState.obstacles.forEach(obstacle => {
-    //     const tile = gameBoard.getTile(obstacle.x, obstacle.y);
-    //     tile.classList.add('obstacle');
-    // });
 };
 
+
+// Функция для отображения сообщения
+function showMessage(state) {
+    $gameMessage.classList.remove('hidden', 'ready', 'paused', 'game-over');
+    switch (state) {
+        case 'ready':
+            $gameMessage.textContent = 'READY';
+            $gameMessage.classList.add('ready');
+            break;
+        case 'paused':
+            $gameMessage.textContent = 'PAUSED';
+            $gameMessage.classList.add('paused');
+            break;
+        case 'game-over':
+            $gameMessage.textContent = 'GAME OVER';
+            $gameMessage.classList.add('game-over');
+            break;
+    }
+}
+
+// Функция для скрытия сообщения
+function hideMessage() {
+    $gameMessage.classList.add('hidden');
+}
+
+// Отображение READY при загрузке
+showMessage('ready');
 

@@ -13,3 +13,4 @@ plugins {
 rootProject.name = "brick_game"
 include("race")
 include("server")
+
