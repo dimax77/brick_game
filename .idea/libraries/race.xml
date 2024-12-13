@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="race">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/race/build/libs/race.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

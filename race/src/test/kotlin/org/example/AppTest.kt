@@ -3,14 +3,77 @@
  */
 package org.example
 
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.assertThrows
+import org.race.Action
 import org.race.App
+import org.race.GameEngine
+import org.race.GameEvents
+import org.race.RaceFSM
 
 class AppTest {
     @Test
     fun appHasAGreeting() {
         val classUnderTest = App()
         assertNotNull(classUnderTest.greeting, "app should have a greeting")
+    }
+}
+
+class GameEngineTest {
+    @Test
+    fun testInitialState() {
+        val game = GameEngine()
+        assertEquals(RaceFSM.Idle, game.state)
+    }
+
+    @Test
+    fun testStartTransition() {
+        val game = GameEngine()
+        game.transition(Action.Start)
+        assertEquals(RaceFSM.Moving::class, game.state::class)
+    }
+
+    @Test
+    fun testMovingTransition() {
+        val game = GameEngine()
+        val exception = assertThrows<IllegalStateException> {  game.userInput(Action.Left, false)  }
+        assertEquals("Invalid transition: Idle -> Idle", exception.message)
+        game.transition(Action.Start)
+        game.transition(Action.Left)
+        assertEquals(RaceFSM.Moving::class, game.state::class)
+    }
+
+    @Test
+    fun testPauseTransition() {
+        val game = GameEngine()
+        game.transition(Action.Start)
+        game.transition(Action.Pause)
+        assertEquals(RaceFSM.Paused::class, game.state::class)
+    }
+    @Test
+    fun testCollisionTransition() {
+        val game = GameEngine()
+        game.transition(Action.Start)
+        game.transition(GameEvents.COLLISION)
+        assertEquals(RaceFSM.GameOver::class, game.state::class)
+    }
+
+    @Test
+    fun testTerminateTransition() {
+        val game = GameEngine()
+        game.transition(Action.Start)
+        game.transition(Action.Terminate)
+        assertEquals(RaceFSM.GameOver::class, game.state::class)
+    }
+
+    @Test
+    fun testRestartTransition() {
+        val game = GameEngine()
+        game.transition(Action.Start)
+        game.transition(Action.Terminate)
+        game.transition(Action.DoAction)
+        assertEquals(RaceFSM.Idle::class, game.state::class)
     }
 }

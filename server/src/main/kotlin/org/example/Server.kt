@@ -1,7 +1,6 @@
-// BrickGameServerClass.kt
+// Server.kt
 package org.example
 
-//import io.ktor.server.http.content.staticFiles
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.defaultForFile

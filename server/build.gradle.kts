@@ -6,48 +6,32 @@
  */
 
 plugins {
-    // Apply the org.jetbrains.kotlin.jvm Plugin to add support for Kotlin.
     alias(libs.plugins.jvm)
     kotlin("plugin.serialization") version "1.9.0"
-    // Apply the application plugin to add support for building a CLI application in Java.
     application
 }
-//plugins {
-//    kotlin("jvm") version "2.0.20"
-//    kotlin("plugin.serialization") version "2.0.20"
-//}
-
 
 repositories {
-    // Use Maven Central for resolving dependencies.
     mavenCentral()
-    // google()
 }
 
 
 dependencies {
     implementation("io.ktor:ktor-server-core:2.1.0")
     implementation("io.ktor:ktor-server-netty:2.1.0")
-    // implementation("io.ktor:ktor-server-routing:2.3.2")
     implementation("io.ktor:ktor-serialization-kotlinx-json:2.1.0")
-//    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
-
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.6.2")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.2")
     implementation("ch.qos.logback:logback-classic:1.5.6")
     implementation("io.ktor:ktor-server-content-negotiation:2.1.0")
+    implementation(libs.guava)
     implementation(project(":race"))
 
-    // Use JUnit Jupiter for testing.
+
     testImplementation(libs.junit.jupiter)
-
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-
-    // This dependency is used by the application.
-    implementation(libs.guava)
 }
 
-// Apply a specific Java toolchain to ease working on different environments.
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(17)
@@ -55,11 +39,9 @@ java {
 }
 
 application {
-    // Define the main class for the application.
     mainClass = "org.example.ServerKt"
 }
 
-// tasks.named<Test>("test") {
-//     // Use JUnit Platform for unit tests.
-//     useJUnitPlatform()
-// }
+ tasks.named<Test>("test") {
+     useJUnitPlatform()
+ }

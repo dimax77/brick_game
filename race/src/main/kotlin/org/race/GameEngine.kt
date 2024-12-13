@@ -6,7 +6,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-class GameEngine(private var state: RaceFSM = RaceFSM.Idle) {
+class GameEngine(var state: RaceFSM = RaceFSM.Idle) {
     private var gameField: List<Array<Boolean>> = List(20) { Array(10) { false } }
     private var score: Int = 0
     private var highScore: Int = 0
@@ -16,7 +16,6 @@ class GameEngine(private var state: RaceFSM = RaceFSM.Idle) {
     private var rivalCars: MutableList<List<IntArray>> = mutableListOf()
     private val playerCar: MutableList<IntArray> = PlayerCar().car
     private var gameLoopJob: Job? = null
-    private var levelTimerJob: Job? = null
     private var stageCount = 0
     private var rivalCarsInterval = 15
 
@@ -62,7 +61,6 @@ class GameEngine(private var state: RaceFSM = RaceFSM.Idle) {
 
     fun startGame() {
         startGameLoop()
-        startLevelTimer()
     }
 
     private fun startGameLoop() {
@@ -71,7 +69,6 @@ class GameEngine(private var state: RaceFSM = RaceFSM.Idle) {
                 checkAndSpawnRivalCars()
                 shiftGameField()
                 stageCount++
-                score += 100
                 if (checkCollision()) {
                     transition(GameEvents.COLLISION)
                     break
@@ -86,16 +83,10 @@ class GameEngine(private var state: RaceFSM = RaceFSM.Idle) {
 
     fun stopGame() {
         stopGameLoop()
-        stopLevelTimer()
-
     }
 
     private fun stopGameLoop() {
         gameLoopJob?.cancel()
-    }
-
-    private fun stopLevelTimer() {
-        levelTimerJob?.cancel()
     }
 
     private fun updateGameField() {
@@ -186,7 +177,24 @@ class GameEngine(private var state: RaceFSM = RaceFSM.Idle) {
 
 
     private fun removeOutOfBoundsRivalCars() {
+        val startSize = rivalCars.size
         rivalCars.removeAll { car -> car[0][0] >= 20 }
+        val deletedCount = startSize - rivalCars.size
+        score += deletedCount
+
+        if (level < 10) {
+            println("Level: $level")
+            val oldLevel = level
+            println("Old Level: $oldLevel")
+
+            val newLevel = score / 5 + 1
+
+            println("New Level: $newLevel")
+            if ((newLevel - oldLevel) > 0) {
+                println("increase level..")
+                increaseLevel()
+            }
+        }
     }
 
     private fun applyRivalCarOnGameField(
@@ -211,18 +219,9 @@ class GameEngine(private var state: RaceFSM = RaceFSM.Idle) {
         return field.map { it.asList() }
     }
 
-    private fun startLevelTimer() {
-        levelTimerJob = CoroutineScope(Dispatchers.Default).launch {
-            while (true) {
-                delay(60_000L) // 2 минуты в миллисекундах
-                increaseLevel()
-            }
-        }
-    }
-
     private fun increaseLevel() {
         level++
-        speed += level / 2
+        speed += 2
         rivalCarsInterval--
         println("Level increased to: $level, Speed: $speed")
     }
@@ -233,7 +232,7 @@ class GameEngine(private var state: RaceFSM = RaceFSM.Idle) {
             state = newState
             state.handleState(this)
         } else {
-            println("Invalid transition: ${state.title} -> ${newState.title}")
+            throw IllegalStateException("Invalid transition: ${state.title} -> ${newState.title}")
         }
     }
 
@@ -245,6 +244,7 @@ class GameEngine(private var state: RaceFSM = RaceFSM.Idle) {
                 is Action -> when {
                     event.isMovement -> RaceFSM.Moving(event)
                     event == Action.Pause -> RaceFSM.Paused
+                    event == Action.Terminate -> RaceFSM.GameOver
                     else -> currentState
                 }
 
