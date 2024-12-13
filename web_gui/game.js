@@ -39,29 +39,30 @@ document.addEventListener('keydown', function (event) {
     }
 });
 
-document.addEventListener('keydown', (event) => {
-    if (event.code === 'Escape') {
-        if (!gamePaused) {
-            // sendAction(2, false)
-            clearInterval(gameInterval);
-            gamePaused = true
-            console.log('Game paused');
+function process_pause() {
+    if (gameRunning) {
+        gamePaused = !gamePaused;
+        if (gamePaused) {
+            showMessage('paused');
         } else {
-            gamePaused = false
-            startGame()
+            hideMessage();
         }
+        sendAction(2, true);
+    }
+}
+document.addEventListener('keydown', (event) => {
+    if (event.code === 'Escape' || event.code === 'Space') {
+        process_pause()
     }
 });
 
 function startGame() {
-    // setInterval(fetchGameState, 100);
     gameInterval = setInterval(() => {
         if (!gamePaused) {
             console.log('Game is running...');
             fetchGameState()
-            // Основная игровая логика здесь
         }
-    }, 16); // Интервал 100 мс
+    }, 16);
 }
 
 // Логика для окончания игры
@@ -85,15 +86,7 @@ document.querySelector('#start').addEventListener('click', () => {
 
 // Логика для паузы
 document.querySelector('#pause').addEventListener('click', () => {
-    if (gameRunning) {
-        gamePaused = !gamePaused;
-        if (gamePaused) {
-            showMessage('paused');
-        } else {
-            hideMessage(); // Убираем сообщение
-        }
-        sendAction(2, true);
-    }
+    process_pause()
 });
 
 document.querySelector('#stop').addEventListener('click', () => {

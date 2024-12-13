@@ -6,13 +6,13 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-class GameEngine(private var state: RaceFSM = RaceFSM.Start) {
+class GameEngine(private var state: RaceFSM = RaceFSM.Idle) {
     private var gameField: List<Array<Boolean>> = List(20) { Array(10) { false } }
     private var score: Int = 0
     private var highScore: Int = 0
     private var level: Int = 1
     private var speed: Int = 1
-    private var pause: Boolean = false
+    var pause: Boolean = false
     private var rivalCars: MutableList<List<IntArray>> = mutableListOf()
     private val playerCar: MutableList<IntArray> = PlayerCar().car
     private var gameLoopJob: Job? = null
@@ -22,30 +22,7 @@ class GameEngine(private var state: RaceFSM = RaceFSM.Start) {
 
 
     fun userInput(action: Action, hold: Boolean) {
-        when (action) {
-            Action.Left -> if (state == RaceFSM.Moving) movePlayerCar(Action.Left)
-            Action.Right -> if (state == RaceFSM.Moving) movePlayerCar(Action.Right)
-            Action.Up -> if (state == RaceFSM.Moving) speed++
-            Action.Down -> if (state == RaceFSM.Moving) speed--
-
-            Action.Start -> if (state == RaceFSM.Start) {
-                if (speed == 0) resetGame()
-                state = RaceFSM.Moving
-                startGameLoop()
-                startLevelTimer()
-            }
-
-            Action.Pause -> if (state == RaceFSM.Moving || state == RaceFSM.Paused) {
-                togglePause()
-            }
-
-            Action.Terminate -> {
-                state = RaceFSM.GameOver
-                gameOver()
-            }
-
-            else -> {}
-        }
+        transition(action)
     }
 
     fun updateCurrentState(): State {
@@ -56,12 +33,14 @@ class GameEngine(private var state: RaceFSM = RaceFSM.Start) {
         )
     }
 
-    private fun movePlayerCar(action: Action) {
+    fun movePlayerCar(action: Action) {
+        println("Action: ${action.name}")
         if (action == Action.Left) {
             if (playerCar[0][1] > 1) {
                 playerCar.forEachIndexed { idx, coord ->
                     playerCar[idx] = intArrayOf(coord[0], coord[1] - 1)
                 }
+                updateGameField()
             }
         }
         if (action == Action.Right) {
@@ -69,28 +48,34 @@ class GameEngine(private var state: RaceFSM = RaceFSM.Start) {
                 playerCar.forEachIndexed { idx, coord ->
                     playerCar[idx] = intArrayOf(coord[0], coord[1] + 1)
                 }
+                updateGameField()
+
             }
         }
-        updateGameField()
+        if (action == Action.Up) {
+            speed = (speed + 1).coerceAtLeast(1)
+        }
+        if (action == Action.Down) {
+            speed = (speed - 1).coerceAtLeast(1)
+        }
+    }
+
+    fun startGame() {
+        startGameLoop()
+        startLevelTimer()
     }
 
     private fun startGameLoop() {
         gameLoopJob = CoroutineScope(Dispatchers.Default).launch {
-            while (state != RaceFSM.GameOver) {
-                if (state == RaceFSM.Moving) {
-                    checkAndSpawnRivalCars()
-                    state = RaceFSM.Shift
-                    shiftGameField()
-                    state = RaceFSM.Moving
-                    stageCount++
-                    score += 100
-                    if (checkCollision()) {
-                        state = RaceFSM.Collided
-                        gameOver()
-                        break
-                    }
+            while (true) {
+                checkAndSpawnRivalCars()
+                shiftGameField()
+                stageCount++
+                score += 100
+                if (checkCollision()) {
+                    transition(GameEvents.COLLISION)
+                    break
                 }
-
                 if (speed > 0) {
                     delay((1000L / speed).coerceAtLeast(100L))
                 }
@@ -99,19 +84,18 @@ class GameEngine(private var state: RaceFSM = RaceFSM.Start) {
     }
 
 
-    private fun togglePause() {
-        pause = !pause
-        if (pause) {
-            state = RaceFSM.Paused
-            stopGameLoop()
-        } else {
-            state = RaceFSM.Moving
-            startGameLoop()
-        }
+    fun stopGame() {
+        stopGameLoop()
+        stopLevelTimer()
+
     }
 
     private fun stopGameLoop() {
         gameLoopJob?.cancel()
+    }
+
+    private fun stopLevelTimer() {
+        levelTimerJob?.cancel()
     }
 
     private fun updateGameField() {
@@ -125,9 +109,7 @@ class GameEngine(private var state: RaceFSM = RaceFSM.Start) {
     private fun checkAndSpawnRivalCars() {
         if (rivalCars.size == 0 || stageCount == rivalCarsInterval) {
             stageCount = 0
-            state = RaceFSM.Spawn
             createRivalCar()
-            state = RaceFSM.Moving
         }
     }
 
@@ -138,7 +120,6 @@ class GameEngine(private var state: RaceFSM = RaceFSM.Start) {
             }
         }
         updateGameField()
-        println("Rival cars count after shift: ${rivalCars.size}")
     }
 
     private fun createRivalCar(): List<IntArray> {
@@ -148,10 +129,6 @@ class GameEngine(private var state: RaceFSM = RaceFSM.Start) {
         val line = kotlin.math.abs((currentTimeStamp.toInt() % 3))
 
         val startPosition = intArrayOf(-4, 1 + line * 3)
-        println("-------------------------------------")
-        println("     RIVAL CAR LANE: $line")
-        println("     CAR CREATED AT POSITION: ${startPosition[0]}:${startPosition[1]}")
-        println("-------------------------------------")
 
         val rivalCar = listOf(
             startPosition,
@@ -163,9 +140,7 @@ class GameEngine(private var state: RaceFSM = RaceFSM.Start) {
             intArrayOf(startPosition[0] + 3, startPosition[1]),
             intArrayOf(startPosition[0] + 3, startPosition[1] + 1)
         )
-        println("Rival Cars size: ${rivalCars.size}")
         rivalCars.add(rivalCar)
-        println("Rival Cars size: ${rivalCars.size}")
 
         return rivalCar
     }
@@ -185,19 +160,22 @@ class GameEngine(private var state: RaceFSM = RaceFSM.Start) {
         return false // Столкновений нет
     }
 
-    private fun gameOver() {
-        stopGameLoop()
-        levelTimerJob?.cancel()
+    fun gameOver() {
+        stopGame()
         speed = 0
-        state = RaceFSM.Start
         println("GAME OVER")
         println("SCORE: $score")
         println("HIGH SCORE: $highScore")
         println("LEVEL: $level")
         println("SPEED: $speed")
+        CoroutineScope(Dispatchers.Default).launch {
+            delay(1000L)
+            resetGame()
+            transition(RaceFSM.Idle)
+        }
     }
 
-    private fun resetGame() {
+    fun resetGame() {
         gameField = List(20) { Array(10) { false } }
         score = 0
         level = 1
@@ -208,7 +186,7 @@ class GameEngine(private var state: RaceFSM = RaceFSM.Start) {
 
 
     private fun removeOutOfBoundsRivalCars() {
-        rivalCars.removeAll { car -> car.any { it[0] >= 20 } }
+        rivalCars.removeAll { car -> car[0][0] >= 20 }
     }
 
     private fun applyRivalCarOnGameField(
@@ -235,11 +213,9 @@ class GameEngine(private var state: RaceFSM = RaceFSM.Start) {
 
     private fun startLevelTimer() {
         levelTimerJob = CoroutineScope(Dispatchers.Default).launch {
-            while (state != RaceFSM.GameOver) {
+            while (true) {
                 delay(60_000L) // 2 минуты в миллисекундах
-                if (state == RaceFSM.Moving) {
-                    increaseLevel()
-                }
+                increaseLevel()
             }
         }
     }
@@ -249,6 +225,48 @@ class GameEngine(private var state: RaceFSM = RaceFSM.Start) {
         speed += level / 2
         rivalCarsInterval--
         println("Level increased to: $level, Speed: $speed")
+    }
+
+    private fun setFSMStateAndProcess(newState: RaceFSM) {
+        if (stateTransitions[state::class]?.contains(newState::class) == true) {
+            println("Transition: ${state.title} -> ${newState.title}")
+            state = newState
+            state.handleState(this)
+        } else {
+            println("Invalid transition: ${state.title} -> ${newState.title}")
+        }
+    }
+
+    fun transition(event: Any? = null) {
+        val nextState = when (val currentState = state) {
+            is RaceFSM.Idle -> if (event == Action.Start) RaceFSM.Start else currentState
+            is RaceFSM.Start -> RaceFSM.Moving()
+            is RaceFSM.Moving -> when (event) {
+                is Action -> when {
+                    event.isMovement -> RaceFSM.Moving(event)
+                    event == Action.Pause -> RaceFSM.Paused
+                    else -> currentState
+                }
+
+                GameEvents.COLLISION -> RaceFSM.Collided
+                else -> currentState
+            }
+
+            is RaceFSM.Paused -> when (event) {
+                is Action -> when (event) {
+                    Action.Pause -> RaceFSM.Start
+                    Action.Terminate -> RaceFSM.GameOver
+                    else -> currentState
+                }
+
+                else -> currentState
+            }
+
+            is RaceFSM.Collided -> RaceFSM.GameOver
+            is RaceFSM.GameOver -> RaceFSM.Idle
+            else -> currentState
+        }
+        setFSMStateAndProcess(nextState)
     }
 
 

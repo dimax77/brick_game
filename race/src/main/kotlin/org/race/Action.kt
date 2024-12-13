@@ -1,12 +1,12 @@
 package org.race
 
-enum class Action {
+enum class Action(val isMovement: Boolean = false) {
     Start,
     Pause,
     Terminate,
-    Left,
-    Right,
-    Up,
-    Down,
-    Action
+    Left(true),
+    Right(true),
+    Up(true),
+    Down(true),
+    DoAction
 }
