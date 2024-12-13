@@ -5,21 +5,12 @@ package org.example
 
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.assertThrows
 import org.race.Action
-import org.race.App
 import org.race.GameEngine
 import org.race.GameEvents
 import org.race.RaceFSM
 
-class AppTest {
-    @Test
-    fun appHasAGreeting() {
-        val classUnderTest = App()
-        assertNotNull(classUnderTest.greeting, "app should have a greeting")
-    }
-}
 
 class GameEngineTest {
     @Test
